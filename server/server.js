@@ -23,7 +23,9 @@ app.use(express.json())
 app.use('/api/auth',authRoutes)
 app.use('/api/ai',aiRoutes)
 
-
+app.use((err,req,res,next)=>{
+    console.error(err.stack)
+})
 
 
 app.listen(3000,()=>{
