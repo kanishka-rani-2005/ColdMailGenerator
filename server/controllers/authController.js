@@ -1,8 +1,15 @@
+const User=require('../models/User')
+const {sendEmail} =require('../utils/emailService')
+const jwt=require("jsonwebtoken")
 
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
 
-
-
-
+// Generate 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 async function register(req,res){
  try {
@@ -31,6 +38,8 @@ async function register(req,res){
     }
     const otp = generateOTP();
     const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase(),
@@ -61,7 +70,44 @@ async function register(req,res){
 }
 
 async function login(req,res){
+  try {
+    const { email, password } = req.body;
 
+    // Input validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    if (!user.isVerified) {
+      return res.status(401).json({ 
+        message: 'Please verify your email first',
+        userId: user._id
+      });
+    }
+
+    const isPasswordValid = await user.matchPassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+      message: 'Login successful!'
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
 }
 
 async function verifyOTP(req,res){
