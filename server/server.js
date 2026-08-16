@@ -16,8 +16,10 @@ app.use(express.json());
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL,
-        credentials: true
+        origin: true,
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
 
@@ -40,7 +42,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Local development only
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
 
