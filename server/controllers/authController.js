@@ -113,8 +113,9 @@ async function login(req,res){
     }
     res.cookie("token", generateToken(user._id), {
         httpOnly: true,
-        secure: true,
-        sameSite: "strict"
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        path: '/'
     });
 
     res.status(200).json({
@@ -194,8 +195,9 @@ async function logout(req, res) {
         }
         res.clearCookie("token", {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict"
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: "lax",
+            path: '/'
         });
 
         return res.status(200).json({
