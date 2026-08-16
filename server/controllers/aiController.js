@@ -532,6 +532,36 @@ async function getHistory(req,res) {
 }
 
 
+async function getHistoryById (req, res) {
+    try {
+        const { id } = req.params;
+
+        const history = await EmailHistory.findOne({
+            _id: id,
+            userId: req.user._id
+        });
+
+        if (!history) {
+            return res.status(404).json({
+                message: "History not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "History fetched successfully",
+            history
+        });
+
+    } catch (error) {
+        console.error("Get history error:", error);
+
+        return res.status(500).json({
+            message: "Failed to fetch history",
+            error: error.message
+        });
+    }
+};
+
 module.exports={
-    getHistory,generateEmail
+    getHistory,generateEmail,getHistoryById
 }

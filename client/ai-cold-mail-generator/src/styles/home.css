@@ -173,6 +173,38 @@
   box-shadow: 0 8px 18px rgba(17, 19, 20, 0.04);
 }
 
+.result-bubble {
+  max-width: min(75%, 700px);
+  background: #ffffff;
+  border: 1px solid rgba(17, 19, 20, 0.08);
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 8px 18px rgba(17, 19, 20, 0.04);
+  display: grid;
+  gap: 14px;
+}
+
+.result-block {
+  display: grid;
+  gap: 6px;
+}
+
+.result-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(23, 26, 29, 0.68);
+  font-weight: 700;
+}
+
+.result-block p {
+  margin: 0;
+  white-space: pre-line;
+  line-height: 1.6;
+  color: #171a1d;
+}
+
 .message-row.user .bubble {
   background: #dff7ee;
   border-color: rgba(23, 163, 117, 0.14);
