@@ -9,5 +9,6 @@ router.post('/login',authController.login)
 
 router.post('/verify-otp',authController.verifyOTP)
 
+router.post('/logout',authController.logout)
 
 module.exports=router

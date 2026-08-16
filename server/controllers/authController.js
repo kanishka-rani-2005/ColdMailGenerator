@@ -163,7 +163,7 @@ try {
     if (user.otp !== otp) {
       return res.status(400).json({ message: 'Invalid OTP. Please try again.' });
     }
-
+    
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpiry = undefined;
@@ -180,6 +180,37 @@ try {
     res.status(500).json({ message: 'Verification failed', error: error.message });
   }
 }
+
+async function logout(req, res) {
+    try {
+        let token;
+        // Cookie
+        if (!token && req.cookies?.token) {
+            token = req.cookies.token;
+        }
+
+        if(!token){
+            return res.status(401).json({ message: 'Already Logged out' });
+        }
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict"
+        });
+
+        return res.status(200).json({
+            message: "Logout successful"
+        });
+
+    } catch (err) {
+        console.error("Logout error:", err);
+
+        return res.status(500).json({
+            message: "Logout failed",
+            error: err.message
+        });
+    }
+}
 module.exports = {
-    register,verifyOTP,login
+    register,verifyOTP,login,logout
 }
