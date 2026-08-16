@@ -1,73 +1,54 @@
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const cookieParser = require('cookie-parser')
-const connectDB = require('./config/db')
-const authRoutes = require('./routes/authRoutes')
-const aiRoutes = require('./routes/aiRoutes')
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
 
-dotenv.config()
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
-const app = express()
-const PORT = process.env.PORT || 3000
+dotenv.config();
 
-app.use(cookieParser())
-app.use(express.json())
+const app = express();
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-].filter(Boolean)
+app.use(cookieParser());
+app.use(express.json());
 
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true)
-        return
-      }
+    cors({
+        origin: process.env.FRONTEND_URL,
+        credentials: true
+    })
+);
 
-      callback(null, true)
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-)
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Backend is running"
+    });
+});
 
-app.use('/api/auth', authRoutes)
-app.use('/api/ai', aiRoutes)
-
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Backend is running',
-  })
-})
+app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).json({
-    message: 'Something went wrong on the server',
-    error: err.message,
-  })
-})
+    console.error(err);
 
-const startServer = async () => {
-  try {
-    await connectDB()
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-    })
-  } catch (error) {
-    console.error('Failed to start server:', error)
-    process.exit(1)
-  }
-}
+    res.status(500).json({
+        success: false,
+        message: "Something went wrong"
+    });
+});
 
+// Local development only
 if (require.main === module) {
-  startServer()
+    const PORT = process.env.PORT || 3000;
+
+    connectDB().then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    });
 }
-module.exports = app
+
+module.exports = app;
