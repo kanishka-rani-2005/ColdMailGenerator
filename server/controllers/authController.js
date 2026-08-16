@@ -71,6 +71,21 @@ async function register(req,res){
 
 async function login(req,res){
   try {
+    const existingToken = req.cookies?.token;
+
+    if (existingToken) {
+      try {
+        const decoded = jwt.verify(existingToken, process.env.JWT_SECRET);
+
+        if (decoded) {
+          return res.status(400).json({
+            message: "User is already logged in"
+          });
+        }
+      } catch (error) {
+        // Invalid/expired token -> continue with normal login
+      }
+    }
     const { email, password } = req.body;
 
     // Input validation
@@ -96,6 +111,11 @@ async function login(req,res){
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+    res.cookie("token", generateToken(user._id), {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict"
+    });
 
     res.status(200).json({
       _id: user._id,
@@ -111,7 +131,54 @@ async function login(req,res){
 }
 
 async function verifyOTP(req,res){
+try {
+    const { userId, otp } = req.body;
 
+    if (!userId || !otp) {
+      return res.status(400).json({ message: 'User ID and OTP are required' });
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ message: 'OTP must be a 6-digit number' });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User already verified. Please login.' });
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      return res.status(400).json({ message: 'No OTP found. Please register again.' });
+    }
+
+    if (Date.now() > user.otpExpiry.getTime()) {
+      return res.status(400).json({ message: 'OTP has expired. Please register again.' });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP. Please try again.' });
+    }
+
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+      message: 'Email verified successfully!'
+    });
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({ message: 'Verification failed', error: error.message });
+  }
 }
 module.exports = {
     register,verifyOTP,login
