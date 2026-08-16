@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 const allowedOrigins = [
-    "https://cold-mail-generator-hwc8-hkjk0sj2d-krani-be23-9326s-projects.vercel.app",
+    "https://cold-mail-generator-hwc8.vercel.app",
     "http://localhost:5173"
 ];
 
