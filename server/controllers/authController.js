@@ -111,11 +111,14 @@ async function login(req,res){
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    res.cookie("token", generateToken(user._id), {
+    const token = generateToken(user._id);
+
+    res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: "lax",
-        path: '/'
+        secure: true,
+        sameSite: "none",
+        path: '/',
+        domain: undefined
     });
 
     res.status(200).json({
@@ -195,9 +198,10 @@ async function logout(req, res) {
         }
         res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: "lax",
-            path: '/'
+            secure: true,
+            sameSite: "none",
+            path: '/',
+            domain: undefined
         });
 
         return res.status(200).json({

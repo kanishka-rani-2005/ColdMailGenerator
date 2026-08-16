@@ -14,9 +14,20 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
+const allowedOrigins = [
+    "https://cold-mail-generator-hwc8-hkjk0sj2d-krani-be23-9326s-projects.vercel.app",
+    "http://localhost:5173"
+];
+
 app.use(
     cors({
-        origin: true,
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+                return;
+            }
+            callback(new Error("Not allowed by CORS"));
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"]
